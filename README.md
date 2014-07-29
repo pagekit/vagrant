@@ -12,8 +12,9 @@ A Vagrant setup for Pagekit with PHP 5.5 and Apache 2.4 / nginx 1.1.19 on a Ubun
 
 ## Get started
 
-- Clone this repository `git clone insert-link-here`
-- Run `vagrant up` in this repository
+- Clone this repository `git clone git@github.com:pagekit/vagrant.git`
+- Goto to the folder `cd vagrant`
+- Run `vagrant up`
     + this may take some time, as the first time you run Vagrant, it might need to fetch the VM, the pagekit repository and all additional packages, that are required for pagekit.
 - Navigate your browser to `http://192.168.56.101/`
 - Pagekit will welcome you with its installation guide
