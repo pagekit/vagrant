@@ -25,5 +25,6 @@ include mysql
 include phpmyadmin
 include composer
 include varnish
+include scripts
 
 include pagekit
