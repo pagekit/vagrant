@@ -14,6 +14,7 @@ server {
     
     gzip             on;
     gzip_comp_level  5;
+    gzip_min_length  512;
     gzip_types       text/plain text/css application/json application/x-javascript text/xml application/xml application/rss+xml text/javascript image/svg+xml application/vnd.ms-fontobject application/x-font-ttf font/opentype;
 
     # all other locations try other files first and go to our front controller if none of them exists
@@ -21,12 +22,16 @@ server {
         try_files $uri $uri/ @rewritepk;
         index index.php index.html index.htm;
     }
-    location ~* .(js|css|png|jpg|jpeg|gif|ico|svg|eot|ttf|ott|woff)$ {
+    location ~* .(png|jpg|jpeg|gif|ico|woff)$ {
         expires 1y;
-        log_not_found off;        
+        log_not_found off;  
     }
-    location ~* .(js|css|svg|html|xml)$ {
-        gzip_static on;
+    location ~* .(js|css|svg|ttf|otf|eot)$ {
+        expires 1y;
+        log_not_found off;  
+    
+        # Only use static .gz files when in production
+        gzip_static on;        
     }
     location @rewritepk {
         rewrite ^(.*)$ /index.php/$1 last;
