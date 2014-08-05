@@ -1,0 +1,125 @@
+# set probe(s)
+#
+<% @probes.each do |probe| -%>
+probe <%= probe['name'] -%> {
+  <%- @probe_params.each do |param| -%>
+    <%- next unless probe[param] -%>
+    <%- if param == 'url' -%>
+  .<%= param -%> = "<%= probe[param] -%>";
+    <%- elsif param == 'request' -%>
+  .<%= param -%> =
+      <%- probe['request'].each do |req_str| -%>
+        <%- if req_str == probe['request'][-1] -%>
+             "<%= req_str -%>";
+        <%- else -%>
+             "<%= req_str -%>"
+        <%- end -%>
+       <%- end -%>
+    <%- else -%>
+  .<%= param -%> = <%= probe[param] -%>;
+    <%- end -%>
+  <%- end -%>
+}
+<%- end -%>
+
+# set backends
+# 
+<% @backends.each do |backend| -%>
+backend <%= backend['name'] -%> {
+  .host = "<%= backend['host'] -%>";
+  .port = "<%= backend['port'] -%>";
+  <%- if backend['probe'] -%>  .probe = <%= backend['probe'] -%>; <%- end %>
+}
+<%- end -%>
+
+# set directors
+#
+<% @directors.each do |director| -%>
+director <%= director['name'] -%> round-robin {
+  <%- director['backends'].each do |backend| -%>
+  { .backend = <%= backend -%>; }
+  <%- end -%>
+}
+<%- end -%>
+
+<% @acls.each do |acl| -%>
+acl <%= acl['name'] -%> {
+<% acl['hosts'].each do |host| -%>
+	<%= host %>;
+<% end -%>
+}
+<%- end -%>
+
+# 
+# Below is a commented-out copy of the default VCL logic.  If you
+# redefine any of these subroutines, the built-in logic will be
+# appended to your code.
+sub vcl_recv {
+
+  # backend selection
+  #
+<%- if @selectors.size == 1 -%>  
+  set req.backend = <%= @selectors[0]['backend'] -%>;
+<%- else -%>
+  <%- @selectors.each do |selector| -%>
+    <%- if @selectors[0] == selector -%>
+  if (<%= selector['condition'] -%>) {
+    set req.backend = <%= selector['backend'] -%>;
+    <%- elsif @selectors[-1] == selector -%>
+  } else {
+    set req.backend = <%= selector['backend'] -%>;
+  }
+    <%- else -%>
+  } elsif (<%= selector['condition'] -%>) {
+    set req.backend = <%= selector['backend'] -%>;
+    <%- end -%>
+  <%- end -%>
+<%- end -%>
+
+if (req.restarts == 0) {
+    if (req.http.x-forwarded-for) {
+      set req.http.X-Forwarded-For =
+      req.http.X-Forwarded-For + ", " + client.ip;
+    } else {
+      set req.http.X-Forwarded-For = client.ip;
+    }
+  }
+
+/* Allow lookup on static assets */
+  if (req.url ~ "(?i)\.(svg|jpeg|jpg|png|gif|ico|webp|js|css|txt|pdf|gz|zip|lzma|bz2|tgz|tbz|html|htm)$") {
+      unset req.http.cookie;
+      set req.http.X-Gzip-Level = 9;
+  }
+
+  if (req.http.Authorization || (req.url ~ "^/admin/")) {
+    /* Not cacheable by default */
+    return (pass);
+  }
+  return (lookup);
+}
+
+/* Always cache static files */
+# Code determining what to do when serving items from the Apache servers.
+sub vcl_fetch {
+
+  # Don't allow static files to set cookies.
+  if (req.url ~ "(?i)\.(png|gif|jpeg|jpg|ico|swf|css|js|html|htm)(\?[a-z0-9]+)?$") {
+    # Set time to live as 4 weeks on static files
+    set beresp.ttl = 4 w;
+    set beresp.http.X-Gzip-Level = 9;
+      set bereq.http.X-Gzip-Level = 9;
+  } else {
+    set beresp.ttl = 120 s;
+  }
+
+  # Allow items to be stale if needed.
+  set beresp.grace = 6h;
+}
+
+# Allow cache per user
+sub vcl_hash {
+  if (req.http.Cookie) {
+    /* Include cookie in cache hash */
+    hash_data(req.http.Cookie);
+  }
+}

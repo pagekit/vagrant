@@ -28,6 +28,7 @@ By default, port-forwarding is not activated, but you can access the VM via the 
 
 - `http://192.168.56.101/` loads pagekit using **apache**
 - `http://192.168.56.101:8080/` loads pagekit using **nginx**
+- `http://192.168.56.101:6081/` loads pagekit using **varnish** with an **nginx** backend
 - `http://192.168.56.101/phpmyadmin` - PHPmyAdmin
 
 You can activate port-forwarding by modifying lines 16-19 in the vagrant file.
