@@ -2,7 +2,7 @@
  
 FILETYPES=( "*.css" "*.js" "*.svg" "*.ttf" "*.otf" "*.eot" )
 DIRECTORIES="/var/www/"
-MIN_SIZE=512
+MIN_SIZE=1024
 
 for currentDir in $DIRECTORIES; do
     for f in "${FILETYPES[@]}"; do
