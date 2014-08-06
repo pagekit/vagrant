@@ -24,5 +24,8 @@ include nginx
 include mysql
 include phpmyadmin
 include composer
+include varnish
 
 include pagekit
+
+include scripts #gzipping assets automatically, for nginx gzip_static
