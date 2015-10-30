@@ -18,7 +18,7 @@ A Vagrant setup for Pagekit with PHP 5.5 and Apache 2.4 / nginx 1.1.19 on a Ubun
     + this may take some time, as the first time you run Vagrant, it might need to fetch the VM, the pagekit repository and all additional packages, that are required for pagekit.
 - Navigate your browser to `http://192.168.56.101/`
 - Pagekit will welcome you with its installation guide
-
+- To shut down the virtual machine vun `vagrant halt`
 
 ## Usage
 
